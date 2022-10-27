@@ -12,17 +12,18 @@ void changeState() {    // interrupt handler
   bStart = bStart ? false : true;
 }
 
-void player_end() {
+void player_end() {//強制停止できる
   if (bPlaying) 
-    theAudio->stopPlayer(AudioClass::Player0 ,AS_STOPPLAYER_NORMAL);
+    theAudio->stopPlayer(A_udioClass::Player0 ,ASSTOPPLAYER_NORMAL);
   bPlaying = false;
   myFile.close();
   Serial.println("End play");
 }
 
-void player_start() {
+//ズレた場合----
+void player_start1() {
   Serial.println("Start play");
-  myFile = theSD.open("Sound.mp3");
+  myFile = theSD.open("Slipping.mp3"); //←←ファイルパス←←
   if (!myFile) {
     Serial.println("File open error\n");
     while(1);
@@ -37,12 +38,28 @@ void player_start() {
   bPlaying = true;
 }
 
-int intPin = 4;
+//逆走の場合----
+void player_start2() {
+  Serial.println("Start play");
+  myFile = theSD.open("Reversing.mp3"); //←←ファイルパス←←
+  if (!myFile) {
+    Serial.println("File open error\n");
+    while(1);
+  }
+  int err = theAudio->writeFrames(AudioClass::Player0, myFile);
+  if ((err != AUDIOLIB_ECODE_OK) && (err != AUDIOLIB_ECODE_FILEEND)) {
+    Serial.println("File Read Error! =" + String(err));
+    player_end();
+  }
+  theAudio->setVolume(-160);
+  theAudio->startPlayer(AudioClass::Player0);
+  bPlaying = true;
+}
+
+int key;
 void setup() {
   int err;
   Serial.begin(115200);
-  pinMode(intPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(intPin) ,changeState ,FALLING);
 
   theAudio->begin();
   theAudio->setRenderingClockMode(AS_CLKMODE_NORMAL);
@@ -59,12 +76,12 @@ void setup() {
 
 void loop() {
   int err;
-  if (!bStart && !bPlaying) {
+  if (key !== 1 || key !== 2 ) {
     return;
-  } else if (bStart && !bPlaying) {
-    player_start(); return;
-  }else if (!bStart && bPlaying) {
-    player_end(); return;
+  } else if (key == 1) {
+    player_start1(); return;
+  }else if (key == 2) {
+    player_start2(); return;
   }
   
   err = theAudio->writeFrames(AudioClass::Player0, myFile);
