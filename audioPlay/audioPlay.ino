@@ -43,7 +43,8 @@ void player_end(File *myFile) {
   Serial.println("End play");
 }
 
-void player_start(String filename, File &myFile) {
+void player_start(String filename) {
+  File myFile;
   Serial.println("Start play");
   myFile = theSD.open(filename);
   if (!myFile) {
@@ -117,17 +118,17 @@ void loop() {
 
     return;
   } else if (bStart && !bPlaying && key == 1) {
-    File myFile;
-    player_start(filename1, myFile); 
+    
+    player_start(filename1); 
     changeState();
-    file2 = &myFile;
+    
     return;
     
   } else if (bStart && !bPlaying && key == 2){
-    File myFile;
-    player_start(filename2, myFile); 
+    
+    player_start(filename2); 
     changeState();
-    file2 = &myFile;
+    
     return;
   }
   
